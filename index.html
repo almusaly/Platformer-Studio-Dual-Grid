@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>Platformer Studio</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ============================== TOP TOOLBAR ============================== -->
+  <header class="topbar" id="topbar">
+    <button class="icon-btn" id="toggleLeft" data-icon="panelLeft" data-tip="Show or hide the assets panel"></button>
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <input id="projectName" class="name-input" maxlength="40" spellcheck="false" aria-label="Project name" data-tip="Click to rename your project">
+    </div>
+
+    <div class="tb-group">
+      <button class="icon-btn" id="btnNew" data-icon="new" data-tip="New project"></button>
+      <button class="icon-btn" id="btnOpen" data-icon="open" data-tip="Open a saved project file (.json) — Ctrl+O"></button>
+      <button class="icon-btn" id="btnSave" data-icon="save" data-tip="Save the project as a file you can open later — Ctrl+S"></button>
+    </div>
+
+    <div class="tb-group">
+      <button class="icon-btn" id="btnUndo" data-icon="undo" data-tip="Undo — Ctrl+Z"></button>
+      <button class="icon-btn" id="btnRedo" data-icon="redo" data-tip="Redo — Ctrl+Shift+Z"></button>
+    </div>
+
+    <div class="tb-group mode-switch keep-paint" role="group" aria-label="Workspace">
+      <button class="chip-btn" id="wsBuild" data-tip="Build: draw your level and place objects (Tab)"><span data-icon="tiles"></span><span class="switch-label">Build</span></button>
+      <button class="chip-btn" id="wsPaint" data-tip="Paint: paint your tiles on the sheet or right on the platform (Tab)"><span data-icon="brush"></span><span class="switch-label">Paint</span></button>
+    </div>
+
+    <div class="tb-group mode-switch" role="group" aria-label="View">
+      <button class="chip-btn" id="viewSide" data-tip="Normal side-on 2D platformer"><span data-icon="square"></span><span class="switch-label">2D</span></button>
+      <button class="chip-btn" id="viewIso" data-tip="Isometric: walk in all directions and jump onto blocks, with real depth"><span data-icon="cube"></span><span class="switch-label">Iso</span></button>
+    </div>
+
+    <div class="tb-group">
+      <button class="chip-btn" id="btnMapSize" data-tip="Map size in tiles (each tile is 32 × 32 pixels)">
+        <span data-icon="resize"></span><span id="mapSizeLabel">20 × 12</span>
+      </button>
+    </div>
+
+    <div class="tb-group zoom-group">
+      <button class="icon-btn" id="btnZoomOut" data-icon="zoomOut" data-tip="Zoom out (−)"></button>
+      <button class="chip-btn mono" id="zoomLabel" data-tip="Fit the level to the screen (0)">100%</button>
+      <button class="icon-btn" id="btnZoomIn" data-icon="zoomIn" data-tip="Zoom in (+)"></button>
+      <button class="icon-btn" id="btnFit" data-icon="fit" data-tip="Fit to screen (0)"></button>
+      <button class="icon-btn toggle" id="btnGrid" data-icon="grid" data-tip="Show or hide grid lines"></button>
+    </div>
+
+    <div class="spacer"></div>
+
+    <button class="play-btn" id="btnPlay" data-tip="Playtest your level — Enter">
+      <span data-icon="play"></span><span class="label">Play</span>
+    </button>
+
+    <div class="tb-group">
+      <button class="icon-btn" id="btnExport" data-icon="image" data-tip="Export the level as a PNG image"></button>
+      <button class="icon-btn" id="btnSettings" data-icon="settings" data-tip="Level, game and app settings"></button>
+    </div>
+    <button class="icon-btn" id="toggleRight" data-icon="panelRight" data-tip="Show or hide the layers panel"></button>
+  </header>
+
+  <div class="workspace" id="workspace">
+
+    <!-- ============================== LEFT SIDEBAR ============================== -->
+    <aside class="sidebar left" id="leftbar" aria-label="Assets and tools">
+      <div class="search-box">
+        <span data-icon="search"></span>
+        <input id="assetSearch" type="search" placeholder="Search assets" aria-label="Search assets" autocomplete="off">
+      </div>
+
+      <div class="sidebar-scroll">
+        <section class="panel" data-section="tilesets" id="secTilesets">
+          <header class="panel-head">
+            <button class="collapse-btn"><span class="chev" data-icon="chevron"></span>Tilesets<span class="count" id="tilesetCount"></span></button>
+            <button class="icon-btn sm" id="btnUploadTileset" data-icon="upload" data-tip="Upload tilesets: dual-grid sheets of 128, 256, 512 or 1024 pixels (4 × 4 tiles), or classic 96 × 96 sets. You can pick several at once."></button>
+            <button class="icon-btn sm" id="btnNewTileset" data-icon="plus" data-tip="Create a new tileset right here"></button>
+          </header>
+          <div class="panel-body drop-zone" data-drop="tileset">
+            <div class="card-grid tilesets" id="tilesetList"></div>
+            <div id="tilesetDetail"></div>
+          </div>
+        </section>
+
+        <section class="panel" data-section="characters" id="secCharacters">
+          <header class="panel-head">
+            <button class="collapse-btn"><span class="chev" data-icon="chevron"></span>Characters</button>
+            <button class="icon-btn sm" id="btnUploadCharacter" data-icon="upload" data-tip="Upload your own character: a 32 × 32 PNG or a sprite sheet"></button>
+          </header>
+          <div class="panel-body drop-zone" data-drop="character">
+            <div class="card-grid" id="characterList"></div>
+            <p class="hint">Pick a hero, then click the map to set where the player starts.</p>
+          </div>
+        </section>
+
+        <section class="panel" data-section="enemies" id="secEnemies">
+          <header class="panel-head">
+            <button class="collapse-btn"><span class="chev" data-icon="chevron"></span>Enemies</button>
+          </header>
+          <div class="panel-body">
+            <div class="card-grid" id="enemyList"></div>
+          </div>
+        </section>
+
+        <section class="panel" data-section="collectibles" id="secCollectibles">
+          <header class="panel-head">
+            <button class="collapse-btn"><span class="chev" data-icon="chevron"></span>Collectibles</button>
+            <button class="icon-btn sm" id="btnUploadCollectible" data-icon="upload" data-tip="Upload your own collectible (transparent PNG, ideally 32 × 32)"></button>
+          </header>
+          <div class="panel-body drop-zone" data-drop="collectible">
+            <div id="collectiblePending"></div>
+            <div class="card-grid" id="collectibleList"></div>
+          </div>
+        </section>
+
+        <section class="panel" data-section="goal" id="secGoal">
+          <header class="panel-head">
+            <button class="collapse-btn"><span class="chev" data-icon="chevron"></span>Goal</button>
+          </header>
+          <div class="panel-body">
+            <div class="card-grid" id="goalList"></div>
+            <p class="hint">Reaching the goal wins the level.</p>
+          </div>
+        </section>
+        <p class="no-results" id="noResults" hidden>No assets match your search.</p>
+      </div>
+
+      <section class="panel tools-panel" data-section="tools" id="secTools">
+        <header class="panel-head">
+          <button class="collapse-btn"><span class="chev" data-icon="chevron"></span>Drawing tools</button>
+        </header>
+        <div class="panel-body">
+          <div class="tool-grid" id="toolGrid"></div>
+        </div>
+      </section>
+
+      <div class="paint-side" id="paintSide"></div>
+    </aside>
+
+    <!-- ============================== TILE SHEET (Paint workspace) ============================== -->
+    <section class="paint-dock" id="paintDock" aria-label="Tile sheet">
+      <div class="sheet-strip" id="sheetStrip"></div>
+      <div class="sheet-host" id="sheetHost">
+        <canvas id="sheetPaint" aria-label="Tile sheet painting canvas"></canvas>
+        <div class="sheet-zoom">
+          <button class="icon-btn sm" id="sheetZoomOut" data-icon="zoomOut" data-tip="Zoom out of the sheet (scroll wheel)"></button>
+          <button class="chip-btn mono" id="sheetZoomLabel" data-tip="Fit the whole sheet in view">100%</button>
+          <button class="icon-btn sm" id="sheetZoomIn" data-icon="zoomIn" data-tip="Zoom in to paint fine detail. Hold Space and drag to move around."></button>
+        </div>
+      </div>
+      <div class="sheet-bar">
+        <span class="sheet-caption" id="sheetCaption"></span>
+        <button class="icon-btn sm toggle" id="sheetGuide" data-icon="guide" data-tip="Show a guide of where each tile's shape goes"></button>
+        <button class="icon-btn sm toggle" id="sheetInside" data-icon="target" data-tip="Keep paint inside each tile's shape"></button>
+        <button class="icon-btn sm" id="sheetRestart" data-icon="refresh" data-tip="Start this tileset over from a style"></button>
+        <button class="icon-btn sm" id="sheetDownload" data-icon="download" data-tip="Download this tile sheet as a PNG"></button>
+        <button class="icon-btn sm toggle" id="sheetFull" data-icon="fit" data-tip="Fullscreen painting: hide the level and make the live sample bigger (F)"></button>
+      </div>
+      <div class="tile-actions" id="tileActions"></div>
+      <div class="sheet-sample-box" id="sheetSampleBox">
+        <span class="field-label">Live sample</span>
+        <canvas id="sheetSample" class="checker-bg" width="288" height="224"></canvas>
+      </div>
+      <button class="btn primary block" id="sheetDone"><span data-icon="check"></span>Back to building</button>
+    </section>
+
+    <!-- ============================== CENTER STAGE ============================== -->
+    <main class="stage" id="stage">
+      <canvas id="canvas" tabindex="0" aria-label="Level canvas"></canvas>
+
+      <div class="empty-hint" id="emptyHint" hidden>
+        <div class="empty-icon" data-icon="pencil"></div>
+        <strong>Your level is empty</strong>
+        <span>Pick a tileset on the left, then click and drag on the grid to draw.</span>
+      </div>
+
+      <div class="welcome" id="welcome" hidden>
+        <button class="icon-btn sm close" id="welcomeClose" data-icon="x" data-tip="Close"></button>
+        <div class="welcome-head">
+          <div class="logo big" aria-hidden="true"></div>
+          <div>
+            <h2>Welcome to Platformer Studio</h2>
+            <p>Build and play your own platformer in three steps.</p>
+          </div>
+        </div>
+        <ol class="steps">
+          <li><span class="step-num">1</span><div><strong>Pick or create a tileset</strong><span>Use Grass, Stone or Ice, or make your own with New. No other app needed.</span></div></li>
+          <li><span class="step-num">2</span><div><strong>Draw, then paint</strong><span>Drag on the grid. Edges and corners are placed for you. Switch to Paint to change the art live.</span></div></li>
+          <li><span class="step-num">3</span><div><strong>Press Play</strong><span>Add a hero, some coins and a goal, then test it in 2D or Iso.</span></div></li>
+        </ol>
+        <div class="welcome-actions">
+          <button class="btn" id="welcomeExample"><span data-icon="sparkle"></span>2D example</button>
+          <button class="btn" id="welcomeIsoExample"><span data-icon="cube"></span>Iso example</button>
+          <button class="btn primary" id="welcomeStart">Start building</button>
+        </div>
+      </div>
+
+      <!-- Gameplay HUD -->
+      <div class="hud" id="hud" hidden>
+        <div class="hud-stats">
+          <div class="hud-pill" data-tip="Score"><span data-icon="star"></span><b id="hudScore">0</b></div>
+          <div class="hud-pill lives" data-tip="Lives"><span data-icon="heart"></span><b id="hudLives">3</b></div>
+          <div class="hud-pill" data-tip="Time"><span data-icon="clock"></span><b id="hudTime">0:00</b></div>
+          <div class="hud-pill" data-tip="Items collected"><span data-icon="gem"></span><b id="hudItems">0/0</b></div>
+        </div>
+        <div class="hud-actions">
+          <button class="hud-btn" id="hudPause" data-icon="pause" data-tip="Pause (P)"></button>
+          <button class="hud-btn" id="hudRestart" data-icon="restart" data-tip="Restart (R)"></button>
+          <button class="hud-btn" id="hudExit" data-icon="exit" data-tip="Back to editor (Esc)"></button>
+        </div>
+      </div>
+      <div class="game-msg" id="gameMsg" hidden></div>
+      <div class="controls-hint" id="controlsHint" hidden>
+        <span><kbd>←</kbd><kbd>→</kbd> move</span>
+        <span><kbd>Space</kbd> jump (twice to double jump)</span>
+        <span><kbd>Shift</kbd> run</span>
+        <span><kbd>Esc</kbd> editor</span>
+      </div>
+      <div class="game-overlay" id="gameOverlay" hidden>
+        <div class="overlay-card" id="overlayCard"></div>
+      </div>
+
+      <div class="statusbar" id="statusbar">
+        <span id="statusCell">–</span>
+        <span id="statusLayer"></span>
+        <span class="status-hint" id="statusHint"></span>
+      </div>
+    </main>
+
+    <!-- ============================== RIGHT SIDEBAR ============================== -->
+    <aside class="sidebar right" id="rightbar" aria-label="Layers and properties">
+      <div class="sidebar-scroll">
+        <section class="panel" data-section="layers" id="secLayers">
+          <header class="panel-head">
+            <button class="collapse-btn"><span class="chev" data-icon="chevron"></span>Layers</button>
+            <button class="icon-btn sm toggle" id="btnHighlightLayer" data-icon="layers" data-tip="Focus mode: fade every layer except the one you are editing"></button>
+            <button class="icon-btn sm" id="btnAddLayer" data-icon="plus" data-tip="Add a new tile layer"></button>
+          </header>
+          <div class="panel-body">
+            <ul class="layer-list" id="layerList"></ul>
+            <div id="layerProps"></div>
+          </div>
+        </section>
+
+        <section class="panel" data-section="props" id="secProps">
+          <header class="panel-head">
+            <button class="collapse-btn"><span class="chev" data-icon="chevron"></span><span id="propsTitle">Properties</span></button>
+          </header>
+          <div class="panel-body" id="props"></div>
+        </section>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ============================== POPOVERS ============================== -->
+<div class="popover" id="mapSizePop" hidden>
+  <h4>Map size</h4>
+  <p class="hint">Measured in tiles. Each tile is 32 × 32 pixels.</p>
+  <div class="size-row">
+    <label class="field"><span>Width</span><input type="number" id="mapW" min="1" max="256" step="1"></label>
+    <span class="times">×</span>
+    <label class="field"><span>Height</span><input type="number" id="mapH" min="1" max="256" step="1"></label>
+  </div>
+  <div class="preset-row" id="sizePresets"></div>
+  <div class="anchor-block">
+    <span class="field-label" data-tip="When the map grows or shrinks, your drawing stays pinned to this side">Keep my level pinned to</span>
+    <div class="anchor-grid" id="anchorGrid"></div>
+  </div>
+  <p class="hint" id="mapSizeInfo"></p>
+  <div class="actions">
+    <button class="btn" id="mapSizeCancel">Cancel</button>
+    <button class="btn primary" id="mapSizeApply">Apply</button>
+  </div>
+</div>
+
+<div class="popover wide" id="exportPop" hidden></div>
+
+<!-- ============================== SETTINGS DRAWER ============================== -->
+<aside class="drawer" id="settingsDrawer" hidden aria-label="Settings">
+  <header class="drawer-head">
+    <h3>Settings</h3>
+    <button class="icon-btn" id="settingsClose" data-icon="x" data-tip="Close settings"></button>
+  </header>
+  <div class="drawer-body" id="settingsBody"></div>
+</aside>
+
+<!-- ============================== DIALOGS ============================== -->
+<dialog class="dialog" id="confirmDialog">
+  <form method="dialog">
+    <h3 id="confirmTitle">Are you sure?</h3>
+    <p id="confirmText"></p>
+    <div class="actions">
+      <button class="btn" value="cancel" id="confirmCancel">Cancel</button>
+      <button class="btn primary" value="ok" id="confirmOk">OK</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="dialog sprite-dialog" id="spriteDialog">
+  <div class="sprite-head">
+    <h3>Character animation</h3>
+    <button class="icon-btn" id="spriteClose" data-icon="x" data-tip="Close without saving"></button>
+  </div>
+  <div class="sprite-layout">
+    <div class="sprite-main">
+      <div class="sprite-controls">
+        <label class="field"><span>Name</span><input id="spriteName" maxlength="30"></label>
+        <label class="field small"><span>Frame width</span><input type="number" id="spriteFW" min="8" max="512"></label>
+        <label class="field small"><span>Frame height</span><input type="number" id="spriteFH" min="8" max="512"></label>
+      </div>
+      <div class="anim-tabs" id="animTabs"></div>
+      <p class="hint" id="spriteHint">Click frames in the order they should play. Click a chosen frame again to remove it.</p>
+      <div class="sheet-wrap"><canvas id="sheetCanvas"></canvas></div>
+    </div>
+    <div class="sprite-side">
+      <div class="preview-box"><canvas id="spritePreview" width="96" height="96"></canvas></div>
+      <label class="field"><span>Speed <b id="spriteFpsLabel">8</b> frames/sec</span><input type="range" id="spriteFps" min="2" max="20" step="1"></label>
+      <div class="anim-summary" id="animSummary"></div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn" id="spriteCancel">Cancel</button>
+    <button class="btn primary" id="spriteSave">Save animation</button>
+  </div>
+</dialog>
+
+<dialog class="dialog sprite-dialog wizard-dialog" id="tilesetDialog"></dialog>
+<dialog class="dialog palette-dialog" id="paletteDialog"></dialog>
+
+<div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<input type="file" id="fileTileset" accept="image/png,image/gif,image/webp,image/bmp,image/jpeg" multiple hidden>
+<input type="file" id="fileReplaceTileset" accept="image/png,image/gif,image/webp,image/bmp,image/jpeg" hidden>
+<input type="file" id="fileCharacter" accept="image/png,image/gif,image/webp,image/bmp" hidden>
+<input type="file" id="fileCollectible" accept="image/png,image/gif,image/webp,image/bmp" hidden>
+<input type="file" id="fileProject" accept=".json,application/json" hidden>
+<input type="file" id="filePalette" accept=".hex,.pal,.gpl,.txt,.ase,image/*" hidden>
+<input type="file" id="fileBrush" accept="image/png,image/gif,image/webp,image/bmp,image/jpeg" multiple hidden>
+
+<!-- Scripts are classic (not modules) so the app works from file:// with no server. -->
+<script src="js/core.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/sprites.js"></script>
+<script src="js/palettes.js"></script>
+<script src="js/autotile.js"></script>
+<script src="js/tilegen.js"></script>
+<script src="js/project.js"></script>
+<script src="js/assets.js"></script>
+<script src="js/history.js"></script>
+<script src="js/iso.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/heal.js"></script>
+<script src="js/brushes.js"></script>
+<script src="js/paint.js"></script>
+<script src="js/tools.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/game.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/exporter.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/panel-assets.js"></script>
+<script src="js/panel-layers.js"></script>
+<script src="js/panel-props.js"></script>
+<script src="js/panel-paint.js"></script>
+<script src="js/sprite-editor.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
